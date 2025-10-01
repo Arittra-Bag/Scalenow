@@ -1,0 +1,1247 @@
+{% extends "base.html" %}
+
+{% block title %}Knowledge Repository - LinkedIn Knowledge Management System{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h3 mb-0">
+        <i class="fas fa-brain me-2"></i>Knowledge Repository
+    </h1>
+    <div>
+        <button class="btn btn-outline-primary me-2" onclick="showSearchModal()">
+            <i class="fas fa-search me-1"></i>Advanced Search
+        </button>
+        <div class="btn-group">
+            <button class="btn btn-success dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                <i class="fas fa-download me-1"></i>Export
+            </button>
+            <ul class="dropdown-menu">
+                <li><a class="dropdown-item" onclick="exportToExcel('all')">
+                    <i class="fas fa-file-excel me-2"></i>All Items - Excel
+                </a></li>
+                <li><a class="dropdown-item" onclick="exportToExcel('filtered')">
+                    <i class="fas fa-file-excel me-2"></i>Filtered Results - Excel
+                </a></li>
+                <li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item" onclick="exportToWord('all')">
+                    <i class="fas fa-file-word me-2"></i>All Items - Word
+                </a></li>
+                <li><a class="dropdown-item" onclick="exportToWord('filtered')">
+                    <i class="fas fa-file-word me-2"></i>Filtered Results - Word
+                </a></li>
+                <li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item" onclick="exportByTopic()">
+                    <i class="fas fa-tags me-2"></i>Export by Topic
+                </a></li>
+                <li><a class="dropdown-item" onclick="exportByCategory()">
+                    <i class="fas fa-layer-group me-2"></i>Export by Category
+                </a></li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<!-- Repository Statistics -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card metric-card">
+            <div class="metric-value">{{ total_items }}</div>
+            <div class="metric-label">Total Knowledge Items</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card metric-card">
+            <div class="metric-value" id="categoriesCount">-</div>
+            <div class="metric-label">Categories</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card metric-card">
+            <div class="metric-value" id="topicsCount">-</div>
+            <div class="metric-label">Unique Topics</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card metric-card">
+            <div class="metric-value" id="coursesCount">-</div>
+            <div class="metric-label">Course References</div>
+        </div>
+    </div>
+</div>
+
+<!-- Enhanced Search and Filter -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-search me-2"></i>Search & Filter Knowledge
+                </h5>
+            </div>
+            <div class="card-body">
+                <!-- Main Search Row -->
+                <div class="row g-3 mb-3">
+                    <div class="col-md-6">
+                        <label for="searchInput" class="form-label">Keyword Search</label>
+                        <div class="input-group">
+                            <input type="text" class="form-control" id="searchInput" 
+                                   placeholder="Search topics, content, keywords, or course names...">
+                            <button class="btn btn-primary" onclick="performSearch()">
+                                <i class="fas fa-search"></i>
+                            </button>
+                        </div>
+                        <div class="form-text">
+                            Search across titles, content, topics, and course references
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="categoryFilter" class="form-label">Category</label>
+                        <select class="form-select" id="categoryFilter" onchange="applyFilters()">
+                            <option value="">All Categories</option>
+                            <option value="AI & Machine Learning">AI & Machine Learning</option>
+                            <option value="SaaS & Business">SaaS & Business</option>
+                            <option value="Marketing & Sales">Marketing & Sales</option>
+                            <option value="Leadership & Management">Leadership & Management</option>
+                            <option value="Technology Trends">Technology Trends</option>
+                            <option value="Course Content">Course Content</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="topicFilter" class="form-label">Topic Filter</label>
+                        <select class="form-select" id="topicFilter" onchange="applyFilters()">
+                            <option value="">All Topics</option>
+                            <!-- Topics will be populated dynamically -->
+                        </select>
+                    </div>
+                </div>
+                
+                <!-- Advanced Filters Row -->
+                <div class="row g-3 mb-3">
+                    <div class="col-md-3">
+                        <label for="dateRangeFilter" class="form-label">Date Range</label>
+                        <select class="form-select" id="dateRangeFilter" onchange="applyFilters()">
+                            <option value="">All Time</option>
+                            <option value="today">Today</option>
+                            <option value="week">This Week</option>
+                            <option value="month">This Month</option>
+                            <option value="quarter">This Quarter</option>
+                            <option value="year">This Year</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="courseFilter" class="form-label">Course References</label>
+                        <select class="form-select" id="courseFilter" onchange="applyFilters()">
+                            <option value="">All Courses</option>
+                            <!-- Courses will be populated dynamically -->
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="sourceFilter" class="form-label">Source Traceability</label>
+                        <select class="form-select" id="sourceFilter" onchange="applyFilters()">
+                            <option value="">All Sources</option>
+                            <option value="manual">Manual Input</option>
+                            <option value="batch">Batch Upload</option>
+                            <option value="api">API Integration</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="contentLength" class="form-label">Content Length</label>
+                        <select class="form-select" id="contentLength" onchange="applyFilters()">
+                            <option value="">Any Length</option>
+                            <option value="short">Short (< 200 chars)</option>
+                            <option value="medium">Medium (200-500 chars)</option>
+                            <option value="long">Long (> 500 chars)</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <!-- Action Buttons -->
+                <div class="row">
+                    <div class="col-12">
+                        <button class="btn btn-outline-secondary me-2" onclick="clearAllFilters()">
+                            <i class="fas fa-times me-1"></i>Clear All Filters
+                        </button>
+                        <button class="btn btn-outline-primary me-2" onclick="saveSearchPreset()">
+                            <i class="fas fa-bookmark me-1"></i>Save Search
+                        </button>
+                        <button class="btn btn-outline-info me-2" onclick="exportFilteredResults()">
+                            <i class="fas fa-download me-1"></i>Export Results
+                        </button>
+                        <button class="btn btn-outline-secondary me-2" onclick="showSearchAnalytics()">
+                            <i class="fas fa-chart-line me-1"></i>Search Analytics
+                        </button>
+                        <span class="text-muted ms-3" id="filterResultsCount">
+                            Showing all items
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body">
+                <h6 class="card-title">Quick Stats</h6>
+                <div id="quickStats">
+                    <div class="text-center text-muted">
+                        <i class="fas fa-spinner fa-spin"></i> Loading...
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Knowledge Items -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="fas fa-lightbulb me-2"></i>Knowledge Items
+                    </h5>
+                    <div>
+                        <select class="form-select form-select-sm" id="sortBy" onchange="sortKnowledge()">
+                            <option value="date_desc">Newest First</option>
+                            <option value="date_asc">Oldest First</option>
+                            <option value="topic_asc">Topic A-Z</option>
+                            <option value="category_asc">Category A-Z</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body p-0">
+                <div id="knowledgeList">
+                    <div class="text-center p-4">
+                        <i class="fas fa-spinner fa-spin me-2"></i>Loading knowledge items...
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Knowledge Item Details Modal -->
+<div class="modal fade" id="knowledgeDetailsModal" tabindex="-1">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Knowledge Item Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="knowledgeDetailsContent">
+                <!-- Knowledge details will be loaded here -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" id="findRelatedBtn" onclick="findRelatedKnowledge()">
+                    <i class="fas fa-link me-1"></i>Find Related
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Advanced Search Modal -->
+<div class="modal fade" id="searchModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Advanced Search</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="advancedSearchForm">
+                    <div class="mb-3">
+                        <label for="advancedQuery" class="form-label">Search Query</label>
+                        <input type="text" class="form-control" id="advancedQuery" 
+                               placeholder="Enter keywords, topics, or phrases...">
+                    </div>
+                    <div class="mb-3">
+                        <label for="advancedCategory" class="form-label">Category</label>
+                        <select class="form-select" id="advancedCategory">
+                            <option value="">All Categories</option>
+                            <option value="AI & Machine Learning">AI & Machine Learning</option>
+                            <option value="SaaS & Business">SaaS & Business</option>
+                            <option value="Marketing & Sales">Marketing & Sales</option>
+                            <option value="Leadership & Management">Leadership & Management</option>
+                            <option value="Technology Trends">Technology Trends</option>
+                            <option value="Course Content">Course Content</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="resultLimit" class="form-label">Maximum Results</label>
+                        <select class="form-select" id="resultLimit">
+                            <option value="10">10 results</option>
+                            <option value="20" selected>20 results</option>
+                            <option value="50">50 results</option>
+                            <option value="100">100 results</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="performAdvancedSearch()">
+                    <i class="fas fa-search me-1"></i>Search
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    let currentKnowledgeItems = [];
+    let allKnowledgeItems = [];
+    let currentKnowledgeId = null;
+    let availableTopics = new Set();
+    let availableCourses = new Set();
+    let searchHistory = [];
+    
+    document.addEventListener('DOMContentLoaded', function() {
+        loadKnowledgeItems();
+        loadQuickStats();
+        initializeFilters();
+        
+        // Enable Enter key for search
+        document.getElementById('searchInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                performSearch();
+            }
+        });
+        
+        // Auto-search with debouncing
+        let searchTimeout;
+        document.getElementById('searchInput').addEventListener('input', function() {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                if (this.value.length >= 2 || this.value.length === 0) {
+                    performSearch();
+                }
+            }, 300);
+        });
+    });
+    
+    async function loadKnowledgeItems() {
+        try {
+            const response = await apiCall('/knowledge?limit=100'); // Load more items for better filtering
+            allKnowledgeItems = response.items || [];
+            currentKnowledgeItems = [...allKnowledgeItems];
+            
+            // Extract unique topics and courses for filters
+            extractFilterOptions();
+            populateFilterDropdowns();
+            
+            renderKnowledgeItems(currentKnowledgeItems);
+            updateFilterResultsCount();
+        } catch (error) {
+            document.getElementById('knowledgeList').innerHTML = 
+                '<div class="text-danger p-4 text-center">Failed to load knowledge items</div>';
+        }
+    }
+    
+    function extractFilterOptions() {
+        availableTopics.clear();
+        availableCourses.clear();
+        
+        allKnowledgeItems.forEach(item => {
+            if (item.topic) {
+                availableTopics.add(item.topic);
+            }
+            if (item.course_references && Array.isArray(item.course_references)) {
+                item.course_references.forEach(course => {
+                    availableCourses.add(course);
+                });
+            }
+        });
+    }
+    
+    function populateFilterDropdowns() {
+        // Populate topic filter
+        const topicFilter = document.getElementById('topicFilter');
+        topicFilter.innerHTML = '<option value="">All Topics</option>';
+        
+        Array.from(availableTopics).sort().forEach(topic => {
+            const option = document.createElement('option');
+            option.value = topic;
+            option.textContent = topic;
+            topicFilter.appendChild(option);
+        });
+        
+        // Populate course filter
+        const courseFilter = document.getElementById('courseFilter');
+        courseFilter.innerHTML = '<option value="">All Courses</option>';
+        
+        Array.from(availableCourses).sort().forEach(course => {
+            const option = document.createElement('option');
+            option.value = course;
+            option.textContent = course;
+            courseFilter.appendChild(option);
+        });
+    }
+    
+    function initializeFilters() {
+        // Load saved search presets from localStorage
+        const savedSearches = JSON.parse(localStorage.getItem('knowledgeSearchPresets') || '[]');
+        if (savedSearches.length > 0) {
+            // Could add a dropdown for saved searches here
+        }
+    }
+    
+    async function loadQuickStats() {
+        try {
+            const analytics = await apiCall('/analytics/content');
+            
+            // Update metric cards
+            const categoryCount = Object.keys(analytics.content_analytics.category_distribution || {}).length;
+            const topicCount = Object.keys(analytics.content_analytics.top_topics || {}).length;
+            const courseCount = Object.values(analytics.content_analytics.top_topics || {}).reduce((a, b) => a + b, 0);
+            
+            document.getElementById('categoriesCount').textContent = categoryCount;
+            document.getElementById('topicsCount').textContent = topicCount;
+            document.getElementById('coursesCount').textContent = courseCount;
+            
+            // Update quick stats
+            let statsHtml = '';
+            const categories = analytics.content_analytics.category_distribution || {};
+            
+            Object.entries(categories).slice(0, 3).forEach(([category, count]) => {
+                statsHtml += `<div class="d-flex justify-content-between mb-1">`;
+                statsHtml += `<small>${category}:</small><small><strong>${count}</strong></small>`;
+                statsHtml += `</div>`;
+            });
+            
+            document.getElementById('quickStats').innerHTML = statsHtml || '<div class="text-muted">No data available</div>';
+            
+        } catch (error) {
+            document.getElementById('quickStats').innerHTML = '<div class="text-danger">Failed to load stats</div>';
+        }
+    }
+    
+    function renderKnowledgeItems(items) {
+        const listElement = document.getElementById('knowledgeList');
+        
+        if (!items || items.length === 0) {
+            listElement.innerHTML = '<div class="text-muted p-4 text-center">No knowledge items found</div>';
+            return;
+        }
+        
+        let html = '';
+        
+        items.forEach(item => {
+            const categoryColor = getCategoryColor(item.category);
+            const shortContent = item.key_knowledge_content.length > 200 ? 
+                item.key_knowledge_content.substring(0, 200) + '...' : item.key_knowledge_content;
+            
+            html += `
+                <div class="border-bottom p-3 knowledge-item" data-category="${item.category}">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <div class="d-flex align-items-start mb-2">
+                                <div class="me-3">
+                                    <span class="badge" style="background-color: ${categoryColor}">
+                                        ${item.category}
+                                    </span>
+                                </div>
+                                <div class="flex-grow-1">
+                                    <h6 class="mb-1">
+                                        <a href="#" onclick="showKnowledgeDetails('${item.id}')" class="text-decoration-none">
+                                            ${item.post_title || 'Untitled Post'}
+                                        </a>
+                                    </h6>
+                                    <p class="text-muted mb-1"><strong>Topic:</strong> ${item.topic}</p>
+                                </div>
+                            </div>
+                            <p class="mb-2">${shortContent}</p>
+                            <div class="d-flex align-items-center text-muted small">
+                                <i class="fas fa-calendar me-1"></i>
+                                <span class="me-3">${formatDate(item.created_at)}</span>
+                                ${item.course_references && item.course_references.length > 0 ? 
+                                    `<i class="fas fa-graduation-cap me-1"></i>
+                                     <span class="me-3">${item.course_references.length} course(s)</span>` : ''}
+                                <i class="fas fa-link me-1"></i>
+                                <a href="${item.source_url}" target="_blank" class="text-muted">View Original</a>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="text-end">
+                                <button class="btn btn-sm btn-outline-primary me-1" onclick="showKnowledgeDetails('${item.id}')">
+                                    <i class="fas fa-eye"></i> View
+                                </button>
+                                <button class="btn btn-sm btn-outline-secondary" onclick="findRelatedKnowledge('${item.id}')">
+                                    <i class="fas fa-link"></i> Related
+                                </button>
+                            </div>
+                            ${item.images && item.images.length > 0 ? 
+                                `<div class="mt-2">
+                                    <small class="text-muted">
+                                        <i class="fas fa-image me-1"></i>${item.images.length} image(s)
+                                    </small>
+                                </div>` : ''}
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+        
+        listElement.innerHTML = html;
+    }
+    
+    function getCategoryColor(category) {
+        const colors = {
+            'AI & Machine Learning': '#007bff',
+            'SaaS & Business': '#28a745',
+            'Marketing & Sales': '#ffc107',
+            'Leadership & Management': '#6f42c1',
+            'Technology Trends': '#17a2b8',
+            'Course Content': '#fd7e14',
+            'Other': '#6c757d'
+        };
+        return colors[category] || '#6c757d';
+    }
+    
+    async function performSearch() {
+        const query = document.getElementById('searchInput').value.trim();
+        
+        // Add to search history
+        if (query && !searchHistory.includes(query)) {
+            searchHistory.unshift(query);
+            searchHistory = searchHistory.slice(0, 10); // Keep last 10 searches
+        }
+        
+        // Apply all filters
+        applyFilters();
+    }
+    
+    function applyFilters() {
+        let filteredItems = [...allKnowledgeItems];
+        
+        // Text search filter
+        const query = document.getElementById('searchInput').value.trim().toLowerCase();
+        if (query) {
+            filteredItems = filteredItems.filter(item => {
+                return (
+                    item.post_title?.toLowerCase().includes(query) ||
+                    item.topic?.toLowerCase().includes(query) ||
+                    item.key_knowledge_content?.toLowerCase().includes(query) ||
+                    item.course_references?.some(course => course.toLowerCase().includes(query))
+                );
+            });
+        }
+        
+        // Category filter
+        const category = document.getElementById('categoryFilter').value;
+        if (category) {
+            filteredItems = filteredItems.filter(item => item.category === category);
+        }
+        
+        // Topic filter
+        const topic = document.getElementById('topicFilter').value;
+        if (topic) {
+            filteredItems = filteredItems.filter(item => item.topic === topic);
+        }
+        
+        // Date range filter
+        const dateRange = document.getElementById('dateRangeFilter').value;
+        if (dateRange) {
+            const now = new Date();
+            const filterDate = getDateRangeFilter(dateRange, now);
+            
+            filteredItems = filteredItems.filter(item => {
+                const itemDate = new Date(item.created_at);
+                return itemDate >= filterDate;
+            });
+        }
+        
+        // Course filter
+        const course = document.getElementById('courseFilter').value;
+        if (course) {
+            filteredItems = filteredItems.filter(item => 
+                item.course_references?.includes(course)
+            );
+        }
+        
+        // Source filter
+        const source = document.getElementById('sourceFilter').value;
+        if (source) {
+            filteredItems = filteredItems.filter(item => {
+                // This would need to be implemented based on how source tracking is stored
+                // For now, we'll use a simple heuristic
+                return true; // Placeholder
+            });
+        }
+        
+        // Content length filter
+        const contentLength = document.getElementById('contentLength').value;
+        if (contentLength) {
+            filteredItems = filteredItems.filter(item => {
+                const length = item.key_knowledge_content?.length || 0;
+                switch (contentLength) {
+                    case 'short': return length < 200;
+                    case 'medium': return length >= 200 && length <= 500;
+                    case 'long': return length > 500;
+                    default: return true;
+                }
+            });
+        }
+        
+        currentKnowledgeItems = filteredItems;
+        renderKnowledgeItems(currentKnowledgeItems);
+        updateFilterResultsCount();
+    }
+    
+    function getDateRangeFilter(range, now) {
+        switch (range) {
+            case 'today':
+                const today = new Date(now);
+                today.setHours(0, 0, 0, 0);
+                return today;
+            case 'week':
+                const weekAgo = new Date(now);
+                weekAgo.setDate(now.getDate() - 7);
+                return weekAgo;
+            case 'month':
+                const monthAgo = new Date(now);
+                monthAgo.setMonth(now.getMonth() - 1);
+                return monthAgo;
+            case 'quarter':
+                const quarterAgo = new Date(now);
+                quarterAgo.setMonth(now.getMonth() - 3);
+                return quarterAgo;
+            case 'year':
+                const yearAgo = new Date(now);
+                yearAgo.setFullYear(now.getFullYear() - 1);
+                return yearAgo;
+            default:
+                return new Date(0); // Beginning of time
+        }
+    }
+    
+    function updateFilterResultsCount() {
+        const total = allKnowledgeItems.length;
+        const filtered = currentKnowledgeItems.length;
+        const countElement = document.getElementById('filterResultsCount');
+        
+        if (filtered === total) {
+            countElement.textContent = `Showing all ${total} items`;
+            countElement.className = 'text-muted ms-3';
+        } else {
+            countElement.textContent = `Showing ${filtered} of ${total} items`;
+            countElement.className = 'text-primary ms-3 fw-medium';
+        }
+    }
+    
+    function sortKnowledge() {
+        const sortBy = document.getElementById('sortBy').value;
+        let sorted = [...currentKnowledgeItems];
+        
+        switch (sortBy) {
+            case 'date_desc':
+                sorted.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+                break;
+            case 'date_asc':
+                sorted.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+                break;
+            case 'topic_asc':
+                sorted.sort((a, b) => a.topic.localeCompare(b.topic));
+                break;
+            case 'category_asc':
+                sorted.sort((a, b) => a.category.localeCompare(b.category));
+                break;
+        }
+        
+        renderKnowledgeItems(sorted);
+    }
+    
+    function clearAllFilters() {
+        document.getElementById('searchInput').value = '';
+        document.getElementById('categoryFilter').value = '';
+        document.getElementById('topicFilter').value = '';
+        document.getElementById('dateRangeFilter').value = '';
+        document.getElementById('courseFilter').value = '';
+        document.getElementById('sourceFilter').value = '';
+        document.getElementById('contentLength').value = '';
+        document.getElementById('sortBy').value = 'date_desc';
+        
+        currentKnowledgeItems = [...allKnowledgeItems];
+        renderKnowledgeItems(currentKnowledgeItems);
+        updateFilterResultsCount();
+    }
+    
+    function saveSearchPreset() {
+        const presetName = prompt('Enter a name for this search preset:');
+        if (!presetName) return;
+        
+        const preset = {
+            name: presetName,
+            query: document.getElementById('searchInput').value,
+            category: document.getElementById('categoryFilter').value,
+            topic: document.getElementById('topicFilter').value,
+            dateRange: document.getElementById('dateRangeFilter').value,
+            course: document.getElementById('courseFilter').value,
+            source: document.getElementById('sourceFilter').value,
+            contentLength: document.getElementById('contentLength').value,
+            timestamp: new Date().toISOString()
+        };
+        
+        const savedSearches = JSON.parse(localStorage.getItem('knowledgeSearchPresets') || '[]');
+        savedSearches.push(preset);
+        localStorage.setItem('knowledgeSearchPresets', JSON.stringify(savedSearches));
+        
+        showAlert(`Search preset "${presetName}" saved successfully`, 'success');
+    }
+    
+    async function exportFilteredResults() {
+        if (currentKnowledgeItems.length === 0) {
+            showAlert('No items to export', 'warning');
+            return;
+        }
+        
+        try {
+            // Create export data
+            const exportData = {
+                search_criteria: {
+                    query: document.getElementById('searchInput').value,
+                    category: document.getElementById('categoryFilter').value,
+                    topic: document.getElementById('topicFilter').value,
+                    date_range: document.getElementById('dateRangeFilter').value,
+                    course: document.getElementById('courseFilter').value,
+                    source: document.getElementById('sourceFilter').value,
+                    content_length: document.getElementById('contentLength').value
+                },
+                results_count: currentKnowledgeItems.length,
+                export_timestamp: new Date().toISOString(),
+                items: currentKnowledgeItems
+            };
+            
+            // Create and download JSON file
+            const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `knowledge-search-results-${new Date().toISOString().split('T')[0]}.json`;
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+            
+            showAlert(`Exported ${currentKnowledgeItems.length} items successfully`, 'success');
+            
+        } catch (error) {
+            showAlert('Failed to export results', 'danger');
+        }
+    }
+    
+    // Enhanced search with source traceability
+    function showSourceTraceability(item) {
+        let traceabilityHtml = `
+            <div class="source-traceability mt-3">
+                <h6><i class="fas fa-link me-2"></i>Source Traceability</h6>
+                <div class="row">
+                    <div class="col-md-6">
+                        <strong>Original URL:</strong><br>
+                        <a href="${item.source_url}" target="_blank" class="text-break">
+                            ${item.source_url}
+                        </a>
+                    </div>
+                    <div class="col-md-6">
+                        <strong>Processing Details:</strong><br>
+                        <small class="text-muted">
+                            Extracted: ${formatDate(item.created_at)}<br>
+                            Category: ${item.category}<br>
+                            Topic: ${item.topic}
+                        </small>
+                    </div>
+                </div>
+        `;
+        
+        if (item.course_references && item.course_references.length > 0) {
+            traceabilityHtml += `
+                <div class="row mt-2">
+                    <div class="col-12">
+                        <strong>Referenced Courses:</strong><br>
+                        ${item.course_references.map(course => 
+                            `<span class="badge bg-info me-1">${course}</span>`
+                        ).join('')}
+                    </div>
+                </div>
+            `;
+        }
+        
+        traceabilityHtml += '</div>';
+        return traceabilityHtml;
+    }
+    
+    // Enhanced export functions with topic-based filtering
+    async function exportToExcel(scope) {
+        const items = scope === 'filtered' ? currentKnowledgeItems : allKnowledgeItems;
+        
+        if (items.length === 0) {
+            showAlert('No items to export', 'warning');
+            return;
+        }
+        
+        try {
+            // Create export URL with parameters
+            const params = new URLSearchParams({
+                scope: scope,
+                format: 'excel',
+                count: items.length
+            });
+            
+            // Add current filters if exporting filtered results
+            if (scope === 'filtered') {
+                params.append('query', document.getElementById('searchInput').value);
+                params.append('category', document.getElementById('categoryFilter').value);
+                params.append('topic', document.getElementById('topicFilter').value);
+                params.append('course', document.getElementById('courseFilter').value);
+            }
+            
+            window.open(`/api/v1/export/excel?${params.toString()}`, '_blank');
+            showAlert(`Excel export initiated for ${items.length} items`, 'success');
+            
+        } catch (error) {
+            showAlert('Failed to export to Excel', 'danger');
+        }
+    }
+    
+    async function exportToWord(scope) {
+        const items = scope === 'filtered' ? currentKnowledgeItems : allKnowledgeItems;
+        
+        if (items.length === 0) {
+            showAlert('No items to export', 'warning');
+            return;
+        }
+        
+        try {
+            const params = new URLSearchParams({
+                scope: scope,
+                format: 'word',
+                count: items.length
+            });
+            
+            if (scope === 'filtered') {
+                params.append('query', document.getElementById('searchInput').value);
+                params.append('category', document.getElementById('categoryFilter').value);
+                params.append('topic', document.getElementById('topicFilter').value);
+                params.append('course', document.getElementById('courseFilter').value);
+            }
+            
+            window.open(`/api/v1/export/word?${params.toString()}`, '_blank');
+            showAlert(`Word export initiated for ${items.length} items`, 'success');
+            
+        } catch (error) {
+            showAlert('Failed to export to Word', 'danger');
+        }
+    }
+    
+    async function exportByTopic() {
+        if (availableTopics.size === 0) {
+            showAlert('No topics available for export', 'warning');
+            return;
+        }
+        
+        // Create modal for topic selection
+        const topicOptions = Array.from(availableTopics).map(topic => {
+            const count = allKnowledgeItems.filter(item => item.topic === topic).length;
+            return `<label class="form-check-label d-block">
+                <input type="checkbox" class="form-check-input me-2" value="${topic}">
+                ${topic} (${count} items)
+            </label>`;
+        }).join('');
+        
+        const modalHtml = `
+            <div class="modal fade" id="topicExportModal" tabindex="-1">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">Export by Topic</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <p>Select topics to export:</p>
+                            <div class="form-check-container">
+                                ${topicOptions}
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <button type="button" class="btn btn-primary" onclick="performTopicExport()">
+                                <i class="fas fa-download me-1"></i>Export Selected
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        // Add modal to page and show
+        document.body.insertAdjacentHTML('beforeend', modalHtml);
+        const modal = new bootstrap.Modal(document.getElementById('topicExportModal'));
+        modal.show();
+        
+        // Clean up modal after hiding
+        document.getElementById('topicExportModal').addEventListener('hidden.bs.modal', function() {
+            this.remove();
+        });
+    }
+    
+    function performTopicExport() {
+        const selectedTopics = Array.from(document.querySelectorAll('#topicExportModal input[type="checkbox"]:checked'))
+            .map(cb => cb.value);
+        
+        if (selectedTopics.length === 0) {
+            showAlert('Please select at least one topic', 'warning');
+            return;
+        }
+        
+        const params = new URLSearchParams({
+            format: 'excel',
+            export_type: 'by_topic',
+            topics: selectedTopics.join(',')
+        });
+        
+        window.open(`/api/v1/export/excel?${params.toString()}`, '_blank');
+        
+        bootstrap.Modal.getInstance(document.getElementById('topicExportModal')).hide();
+        showAlert(`Export initiated for ${selectedTopics.length} topics`, 'success');
+    }
+    
+    async function exportByCategory() {
+        const categories = ['AI & Machine Learning', 'SaaS & Business', 'Marketing & Sales', 
+                          'Leadership & Management', 'Technology Trends', 'Course Content', 'Other'];
+        
+        const categoryOptions = categories.map(category => {
+            const count = allKnowledgeItems.filter(item => item.category === category).length;
+            if (count === 0) return '';
+            
+            return `<label class="form-check-label d-block">
+                <input type="checkbox" class="form-check-input me-2" value="${category}">
+                ${category} (${count} items)
+            </label>`;
+        }).filter(option => option).join('');
+        
+        const modalHtml = `
+            <div class="modal fade" id="categoryExportModal" tabindex="-1">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">Export by Category</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <p>Select categories to export:</p>
+                            <div class="form-check-container">
+                                ${categoryOptions}
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <button type="button" class="btn btn-primary" onclick="performCategoryExport()">
+                                <i class="fas fa-download me-1"></i>Export Selected
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        document.body.insertAdjacentHTML('beforeend', modalHtml);
+        const modal = new bootstrap.Modal(document.getElementById('categoryExportModal'));
+        modal.show();
+        
+        document.getElementById('categoryExportModal').addEventListener('hidden.bs.modal', function() {
+            this.remove();
+        });
+    }
+    
+    function performCategoryExport() {
+        const selectedCategories = Array.from(document.querySelectorAll('#categoryExportModal input[type="checkbox"]:checked'))
+            .map(cb => cb.value);
+        
+        if (selectedCategories.length === 0) {
+            showAlert('Please select at least one category', 'warning');
+            return;
+        }
+        
+        const params = new URLSearchParams({
+            format: 'excel',
+            export_type: 'by_category',
+            categories: selectedCategories.join(',')
+        });
+        
+        window.open(`/api/v1/export/excel?${params.toString()}`, '_blank');
+        
+        bootstrap.Modal.getInstance(document.getElementById('categoryExportModal')).hide();
+        showAlert(`Export initiated for ${selectedCategories.length} categories`, 'success');
+    }
+    
+    function showSearchAnalytics() {
+        const searchStats = getSearchAnalytics();
+        
+        const modalHtml = `
+            <div class="modal fade" id="searchAnalyticsModal" tabindex="-1">
+                <div class="modal-dialog modal-lg">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">
+                                <i class="fas fa-chart-line me-2"></i>Search Analytics
+                            </h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <h6>Recent Searches</h6>
+                                    <div class="list-group list-group-flush">
+                                        ${searchHistory.slice(0, 5).map(query => 
+                                            `<div class="list-group-item px-0 py-2">
+                                                <i class="fas fa-search me-2 text-muted"></i>${query}
+                                            </div>`
+                                        ).join('') || '<div class="text-muted">No recent searches</div>'}
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <h6>Filter Usage</h6>
+                                    <div class="mb-3">
+                                        <small class="text-muted">Most Used Categories:</small><br>
+                                        ${searchStats.topCategories.map(cat => 
+                                            `<span class="badge bg-primary me-1">${cat}</span>`
+                                        ).join('')}
+                                    </div>
+                                    <div class="mb-3">
+                                        <small class="text-muted">Most Used Topics:</small><br>
+                                        ${searchStats.topTopics.map(topic => 
+                                            `<span class="badge bg-info me-1">${topic}</span>`
+                                        ).join('')}
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row mt-3">
+                                <div class="col-12">
+                                    <h6>Search Performance</h6>
+                                    <div class="row">
+                                        <div class="col-md-4 text-center">
+                                            <div class="h4 text-primary">${searchStats.totalSearches}</div>
+                                            <div class="text-muted small">Total Searches</div>
+                                        </div>
+                                        <div class="col-md-4 text-center">
+                                            <div class="h4 text-success">${searchStats.avgResultsPerSearch}</div>
+                                            <div class="text-muted small">Avg Results</div>
+                                        </div>
+                                        <div class="col-md-4 text-center">
+                                            <div class="h4 text-info">${searchStats.filterUsageRate}%</div>
+                                            <div class="text-muted small">Filter Usage</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-outline-danger" onclick="clearSearchHistory()">
+                                <i class="fas fa-trash me-1"></i>Clear History
+                            </button>
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        document.body.insertAdjacentHTML('beforeend', modalHtml);
+        const modal = new bootstrap.Modal(document.getElementById('searchAnalyticsModal'));
+        modal.show();
+        
+        document.getElementById('searchAnalyticsModal').addEventListener('hidden.bs.modal', function() {
+            this.remove();
+        });
+    }
+    
+    function getSearchAnalytics() {
+        // Calculate search analytics from current data
+        const categoryUsage = {};
+        const topicUsage = {};
+        
+        allKnowledgeItems.forEach(item => {
+            categoryUsage[item.category] = (categoryUsage[item.category] || 0) + 1;
+            topicUsage[item.topic] = (topicUsage[item.topic] || 0) + 1;
+        });
+        
+        const topCategories = Object.entries(categoryUsage)
+            .sort(([,a], [,b]) => b - a)
+            .slice(0, 3)
+            .map(([category]) => category);
+            
+        const topTopics = Object.entries(topicUsage)
+            .sort(([,a], [,b]) => b - a)
+            .slice(0, 3)
+            .map(([topic]) => topic);
+        
+        return {
+            totalSearches: searchHistory.length,
+            avgResultsPerSearch: Math.round(allKnowledgeItems.length / Math.max(searchHistory.length, 1)),
+            filterUsageRate: Math.round(Math.random() * 30 + 40), // Mock data
+            topCategories,
+            topTopics
+        };
+    }
+    
+    function clearSearchHistory() {
+        searchHistory.length = 0;
+        localStorage.removeItem('knowledgeSearchPresets');
+        showAlert('Search history cleared', 'info');
+        bootstrap.Modal.getInstance(document.getElementById('searchAnalyticsModal')).hide();
+    }
+    
+    async function showKnowledgeDetails(knowledgeId) {
+        try {
+            currentKnowledgeId = knowledgeId;
+            const item = await apiCall(`/knowledge/${knowledgeId}`);
+            
+            let html = `
+                <div class="row">
+                    <div class="col-md-8">
+                        <h5>${item.post_title || 'Untitled Post'}</h5>
+                        <div class="mb-3">
+                            <span class="badge" style="background-color: ${getCategoryColor(item.category)}">
+                                ${item.category}
+                            </span>
+                            <span class="badge bg-secondary ms-2">${item.topic}</span>
+                        </div>
+                    </div>
+                    <div class="col-md-4 text-end">
+                        <small class="text-muted">
+                            <i class="fas fa-calendar me-1"></i>${formatDate(item.created_at)}
+                        </small>
+                    </div>
+                </div>
+                
+                <div class="row mt-3">
+                    <div class="col-12">
+                        <h6>Key Knowledge Content</h6>
+                        <div class="bg-light p-3 rounded">
+                            ${item.key_knowledge_content.replace(/\n/g, '<br>')}
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row mt-3">
+                    <div class="col-12">
+                        <h6>Source</h6>
+                        <a href="${item.source_url}" target="_blank" class="btn btn-outline-primary btn-sm">
+                            <i class="fas fa-external-link-alt me-1"></i>View Original Post
+                        </a>
+                    </div>
+                </div>
+            `;
+            
+            if (item.course_references && item.course_references.length > 0) {
+                html += `
+                    <div class="row mt-3">
+                        <div class="col-12">
+                            <h6>Course References</h6>
+                            <ul class="list-group list-group-flush">
+                `;
+                item.course_references.forEach(course => {
+                    html += `<li class="list-group-item px-0">${course}</li>`;
+                });
+                html += `</ul></div></div>`;
+            }
+            
+            if (item.images && item.images.length > 0) {
+                html += `
+                    <div class="row mt-3">
+                        <div class="col-12">
+                            <h6>Images</h6>
+                            <div class="row">
+                `;
+                item.images.forEach(image => {
+                    html += `
+                        <div class="col-md-4 mb-2">
+                            <img src="${image.local_path || image.url}" class="img-fluid rounded" 
+                                 alt="Post image" style="max-height: 200px; object-fit: cover;">
+                        </div>
+                    `;
+                });
+                html += `</div></div></div>`;
+            }
+            
+            // Add source traceability section
+            html += showSourceTraceability(item);
+            
+            document.getElementById('knowledgeDetailsContent').innerHTML = html;
+            
+            const modal = new bootstrap.Modal(document.getElementById('knowledgeDetailsModal'));
+            modal.show();
+            
+        } catch (error) {
+            showAlert('Failed to load knowledge details', 'danger');
+        }
+    }
+    
+    function showSearchModal() {
+        const modal = new bootstrap.Modal(document.getElementById('searchModal'));
+        modal.show();
+    }
+    
+    async function performAdvancedSearch() {
+        const query = document.getElementById('advancedQuery').value.trim();
+        const category = document.getElementById('advancedCategory').value;
+        const limit = document.getElementById('resultLimit').value;
+        
+        if (!query) {
+            showAlert('Please enter a search query', 'warning');
+            return;
+        }
+        
+        try {
+            let url = `/knowledge/search?q=${encodeURIComponent(query)}&limit=${limit}`;
+            if (category) {
+                url += `&category=${encodeURIComponent(category)}`;
+            }
+            
+            const response = await apiCall(url);
+            currentKnowledgeItems = response.items || [];
+            renderKnowledgeItems(currentKnowledgeItems);
+            
+            // Close modal
+            bootstrap.Modal.getInstance(document.getElementById('searchModal')).hide();
+            
+            // Update search input
+            document.getElementById('searchInput').value = query;
+            
+            showAlert(`Found ${currentKnowledgeItems.length} results`, 'success');
+            
+        } catch (error) {
+            showAlert('Advanced search failed', 'danger');
+        }
+    }
+    
+    async function findRelatedKnowledge(knowledgeId = null) {
+        const targetId = knowledgeId || currentKnowledgeId;
+        if (!targetId) return;
+        
+        try {
+            const response = await apiCall(`/knowledge/${targetId}/related`);
+            currentKnowledgeItems = response.items || [];
+            renderKnowledgeItems(currentKnowledgeItems);
+            
+            if (knowledgeId) {
+                // If called from knowledge list, close any open modal
+                const modal = bootstrap.Modal.getInstance(document.getElementById('knowledgeDetailsModal'));
+                if (modal) modal.hide();
+            }
+            
+            showAlert(`Found ${currentKnowledgeItems.length} related items`, 'info');
+            
+        } catch (error) {
+            showAlert('Failed to find related knowledge', 'danger');
+        }
+    }
+</script>
+{% endblock %}

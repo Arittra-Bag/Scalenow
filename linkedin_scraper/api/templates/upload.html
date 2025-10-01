@@ -1,0 +1,434 @@
+{% extends "base.html" %}
+
+{% block title %}Upload URLs - LinkedIn Knowledge Management System{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h3 mb-0">
+        <i class="fas fa-upload me-2"></i>Upload URLs for Processing
+    </h1>
+    <div>
+        <button class="btn btn-outline-secondary me-2" onclick="clearForm()">
+            <i class="fas fa-times me-1"></i>Clear Form
+        </button>
+        <button class="btn btn-success" onclick="processUrls()">
+            <i class="fas fa-play me-1"></i>Process URLs
+        </button>
+    </div>
+</div>
+
+<!-- URL Input Methods -->
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-keyboard me-2"></i>Manual URL Entry
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <label for="singleUrl" class="form-label">Single LinkedIn URL</label>
+                    <div class="input-group">
+                        <input type="url" class="form-control" id="singleUrl" 
+                               placeholder="https://www.linkedin.com/posts/...">
+                        <button class="btn btn-outline-primary" onclick="addSingleUrl()">
+                            <i class="fas fa-plus"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="bulkUrls" class="form-label">Bulk URLs (one per line)</label>
+                    <textarea class="form-control" id="bulkUrls" rows="8" 
+                              placeholder="Paste multiple LinkedIn URLs here, one per line..."></textarea>
+                </div>
+                
+                <button class="btn btn-primary" onclick="addBulkUrls()">
+                    <i class="fas fa-plus me-1"></i>Add URLs to Queue
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-file-upload me-2"></i>File Upload
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <label for="fileUpload" class="form-label">Upload Text File</label>
+                    <input type="file" class="form-control" id="fileUpload" 
+                           accept=".txt,.csv" onchange="handleFileUpload(event)">
+                    <div class="form-text">
+                        Supported formats: .txt, .csv (one URL per line)
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="priority" class="form-label">Processing Priority</label>
+                    <select class="form-select" id="priority">
+                        <option value="3">Normal Priority</option>
+                        <option value="1">Low Priority</option>
+                        <option value="5">High Priority</option>
+                        <option value="8">Urgent</option>
+                        <option value="10">Critical</option>
+                    </select>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="metadata" class="form-label">Metadata (Optional)</label>
+                    <textarea class="form-control" id="metadata" rows="3" 
+                              placeholder='{"source": "campaign_1", "tags": ["ai", "business"]}'></textarea>
+                    <div class="form-text">
+                        JSON format for additional metadata
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- URL Queue Preview -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="fas fa-list me-2"></i>URL Queue Preview
+                    </h5>
+                    <div>
+                        <span class="badge bg-primary" id="urlCount">0 URLs</span>
+                        <button class="btn btn-sm btn-outline-danger ms-2" onclick="clearQueue()">
+                            <i class="fas fa-trash me-1"></i>Clear Queue
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body p-0">
+                <div id="urlQueue">
+                    <div class="text-muted p-4 text-center">
+                        No URLs added yet. Use the forms above to add LinkedIn URLs for processing.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Processing Modal -->
+<div class="modal fade" id="processingModal" tabindex="-1" data-bs-backdrop="static">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Processing URLs</h5>
+            </div>
+            <div class="modal-body">
+                <div class="text-center">
+                    <div class="loading-spinner mb-3"></div>
+                    <h6 id="processingStatus">Submitting URLs...</h6>
+                    <p class="text-muted" id="processingDetails">Please wait while we add your URLs to the processing queue.</p>
+                </div>
+                <div class="mt-3">
+                    <div class="progress progress-custom">
+                        <div class="progress-bar progress-bar-custom" role="progressbar" 
+                             style="width: 0%" id="processingProgress">
+                        </div>
+                    </div>
+                    <div class="d-flex justify-content-between mt-2">
+                        <small class="text-muted">Progress</small>
+                        <small class="text-muted" id="processingProgressText">0%</small>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" id="processingCloseBtn" 
+                        onclick="closeProcessingModal()" disabled>
+                    Close
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    let urlQueue = [];
+    let processingModal = null;
+    
+    document.addEventListener('DOMContentLoaded', function() {
+        processingModal = new bootstrap.Modal(document.getElementById('processingModal'));
+        
+        // Enable Enter key for single URL input
+        document.getElementById('singleUrl').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                addSingleUrl();
+            }
+        });
+    });
+    
+    function addSingleUrl() {
+        const urlInput = document.getElementById('singleUrl');
+        const url = urlInput.value.trim();
+        
+        if (!url) {
+            showAlert('Please enter a URL', 'warning');
+            return;
+        }
+        
+        if (!isValidLinkedInUrl(url)) {
+            showAlert('Please enter a valid LinkedIn post URL', 'warning');
+            return;
+        }
+        
+        if (urlQueue.includes(url)) {
+            showAlert('URL already in queue', 'warning');
+            return;
+        }
+        
+        urlQueue.push(url);
+        urlInput.value = '';
+        updateQueueDisplay();
+        showAlert('URL added to queue', 'success');
+    }
+    
+    function addBulkUrls() {
+        const bulkInput = document.getElementById('bulkUrls');
+        const urls = bulkInput.value.split('\n')
+            .map(url => url.trim())
+            .filter(url => url.length > 0);
+        
+        if (urls.length === 0) {
+            showAlert('Please enter some URLs', 'warning');
+            return;
+        }
+        
+        let validUrls = 0;
+        let duplicates = 0;
+        let invalid = 0;
+        
+        urls.forEach(url => {
+            if (!isValidLinkedInUrl(url)) {
+                invalid++;
+                return;
+            }
+            
+            if (urlQueue.includes(url)) {
+                duplicates++;
+                return;
+            }
+            
+            urlQueue.push(url);
+            validUrls++;
+        });
+        
+        bulkInput.value = '';
+        updateQueueDisplay();
+        
+        let message = `Added ${validUrls} URLs to queue`;
+        if (duplicates > 0) message += `, ${duplicates} duplicates skipped`;
+        if (invalid > 0) message += `, ${invalid} invalid URLs skipped`;
+        
+        showAlert(message, validUrls > 0 ? 'success' : 'warning');
+    }
+    
+    function handleFileUpload(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const content = e.target.result;
+            const urls = content.split('\n')
+                .map(url => url.trim())
+                .filter(url => url.length > 0);
+            
+            document.getElementById('bulkUrls').value = urls.join('\n');
+            showAlert(`Loaded ${urls.length} URLs from file`, 'info');
+        };
+        
+        reader.readAsText(file);
+    }
+    
+    function updateQueueDisplay() {
+        const queueElement = document.getElementById('urlQueue');
+        const countElement = document.getElementById('urlCount');
+        
+        countElement.textContent = `${urlQueue.length} URLs`;
+        
+        if (urlQueue.length === 0) {
+            queueElement.innerHTML = `
+                <div class="text-muted p-4 text-center">
+                    No URLs added yet. Use the forms above to add LinkedIn URLs for processing.
+                </div>
+            `;
+            return;
+        }
+        
+        let html = '<div class="table-responsive">';
+        html += '<table class="table table-hover mb-0">';
+        html += `
+            <thead class="table-dark">
+                <tr>
+                    <th>#</th>
+                    <th>URL</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+        `;
+        
+        urlQueue.forEach((url, index) => {
+            const shortUrl = url.length > 80 ? url.substring(0, 80) + '...' : url;
+            html += `
+                <tr>
+                    <td>${index + 1}</td>
+                    <td>
+                        <a href="${url}" target="_blank" class="text-decoration-none" title="${url}">
+                            ${shortUrl}
+                        </a>
+                    </td>
+                    <td>
+                        <button class="btn btn-sm btn-outline-danger" onclick="removeUrl(${index})">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </td>
+                </tr>
+            `;
+        });
+        
+        html += '</tbody></table></div>';
+        queueElement.innerHTML = html;
+    }
+    
+    function removeUrl(index) {
+        urlQueue.splice(index, 1);
+        updateQueueDisplay();
+        showAlert('URL removed from queue', 'info');
+    }
+    
+    function clearQueue() {
+        if (urlQueue.length === 0) return;
+        
+        if (confirm(`Are you sure you want to clear all ${urlQueue.length} URLs from the queue?`)) {
+            urlQueue = [];
+            updateQueueDisplay();
+            showAlert('Queue cleared', 'info');
+        }
+    }
+    
+    function clearForm() {
+        document.getElementById('singleUrl').value = '';
+        document.getElementById('bulkUrls').value = '';
+        document.getElementById('fileUpload').value = '';
+        document.getElementById('metadata').value = '';
+        document.getElementById('priority').value = '3';
+        clearQueue();
+    }
+    
+    async function processUrls() {
+        if (urlQueue.length === 0) {
+            showAlert('No URLs to process', 'warning');
+            return;
+        }
+        
+        const priority = parseInt(document.getElementById('priority').value);
+        let metadata = {};
+        
+        try {
+            const metadataText = document.getElementById('metadata').value.trim();
+            if (metadataText) {
+                metadata = JSON.parse(metadataText);
+            }
+        } catch (e) {
+            showAlert('Invalid metadata JSON format', 'warning');
+            return;
+        }
+        
+        // Show processing modal
+        processingModal.show();
+        document.getElementById('processingCloseBtn').disabled = true;
+        
+        try {
+            // Submit URLs in batches
+            const batchSize = 10;
+            const totalBatches = Math.ceil(urlQueue.length / batchSize);
+            let processedBatches = 0;
+            let totalTaskIds = [];
+            
+            for (let i = 0; i < urlQueue.length; i += batchSize) {
+                const batch = urlQueue.slice(i, i + batchSize);
+                
+                document.getElementById('processingStatus').textContent = 
+                    `Processing batch ${processedBatches + 1} of ${totalBatches}...`;
+                document.getElementById('processingDetails').textContent = 
+                    `Submitting ${batch.length} URLs to processing queue`;
+                
+                const response = await apiCall('/urls/batch', 'POST', {
+                    urls: batch,
+                    priority: priority,
+                    metadata: metadata
+                });
+                
+                totalTaskIds.push(...response.task_ids);
+                processedBatches++;
+                
+                const progress = (processedBatches / totalBatches) * 100;
+                document.getElementById('processingProgress').style.width = progress + '%';
+                document.getElementById('processingProgressText').textContent = Math.round(progress) + '%';
+                
+                // Small delay between batches
+                if (i + batchSize < urlQueue.length) {
+                    await new Promise(resolve => setTimeout(resolve, 500));
+                }
+            }
+            
+            // Success
+            document.getElementById('processingStatus').textContent = 'Processing Complete!';
+            document.getElementById('processingDetails').textContent = 
+                `Successfully added ${totalTaskIds.length} URLs to the processing queue. You can monitor progress in the Queue tab.`;
+            
+            // Clear the queue
+            urlQueue = [];
+            updateQueueDisplay();
+            
+            // Enable close button
+            document.getElementById('processingCloseBtn').disabled = false;
+            
+            showAlert(`Successfully queued ${totalTaskIds.length} URLs for processing`, 'success');
+            
+        } catch (error) {
+            document.getElementById('processingStatus').textContent = 'Processing Failed';
+            document.getElementById('processingDetails').textContent = 
+                `Error: ${error.message}. Please try again or check the URLs.`;
+            document.getElementById('processingCloseBtn').disabled = false;
+        }
+    }
+    
+    function closeProcessingModal() {
+        processingModal.hide();
+        
+        // Reset modal state
+        document.getElementById('processingStatus').textContent = 'Submitting URLs...';
+        document.getElementById('processingDetails').textContent = 
+            'Please wait while we add your URLs to the processing queue.';
+        document.getElementById('processingProgress').style.width = '0%';
+        document.getElementById('processingProgressText').textContent = '0%';
+    }
+    
+    function isValidLinkedInUrl(url) {
+        try {
+            const urlObj = new URL(url);
+            return urlObj.hostname === 'www.linkedin.com' && 
+                   (urlObj.pathname.includes('/posts/') || urlObj.pathname.includes('/feed/update/'));
+        } catch (e) {
+            return false;
+        }
+    }
+</script>
+{% endblock %}

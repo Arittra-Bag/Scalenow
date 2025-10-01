@@ -1,0 +1,37 @@
+{
+  "date": "2025-10",
+  "item_count": 5,
+  "items": [
+    {
+      "id": "61882a75-2856-40fe-919c-0c30981a9697",
+      "title": "How AI is Transforming Customer Service",
+      "category": "AI & Machine Learning",
+      "source": "https://linkedin.com/posts/ai-expert-customer-service"
+    },
+    {
+      "id": "8e6af7de-be76-4356-8b67-a48957f90ae8",
+      "title": "SaaS Metrics That Matter in 2024",
+      "category": "SaaS & Business",
+      "source": "https://linkedin.com/posts/saas-expert-metrics-2024"
+    },
+    {
+      "id": "e3ce285f-072b-460a-a809-a1d6d13648c6",
+      "title": "Email Marketing Best Practices",
+      "category": "Marketing & Sales",
+      "source": "https://linkedin.com/posts/marketing-guru-email-tips"
+    },
+    {
+      "id": "ce467264-d31b-4b3b-b413-377ad37282a9",
+      "title": "Remote Team Management Strategies",
+      "category": "Leadership & Management",
+      "source": "https://linkedin.com/posts/leadership-coach-remote-teams"
+    },
+    {
+      "id": "8bc51a94-fc77-43ca-86a4-208ba82ebded",
+      "title": "Microservices Architecture Benefits",
+      "category": "Technology Trends",
+      "source": "https://linkedin.com/posts/tech-architect-microservices"
+    }
+  ],
+  "generated": "2025-10-01T23:29:34.869762"
+}

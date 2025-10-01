@@ -1,0 +1,58 @@
+# LinkedIn Knowledge Management System - Development Dockerfile
+FROM python:3.11-slim
+
+# Set environment variables
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PIP_NO_CACHE_DIR=1 \
+    PIP_DISABLE_PIP_VERSION_CHECK=1 \
+    DEVELOPMENT_MODE=true
+
+# Set work directory
+WORKDIR /app
+
+# Install system dependencies including development tools
+RUN apt-get update && apt-get install -y \
+    gcc \
+    g++ \
+    curl \
+    wget \
+    gnupg \
+    unzip \
+    git \
+    vim \
+    chromium \
+    chromium-driver \
+    && rm -rf /var/lib/apt/lists/*
+
+# Set Chrome/Chromium environment variables
+ENV CHROME_BIN=/usr/bin/chromium \
+    CHROMEDRIVER_PATH=/usr/bin/chromedriver
+
+# Copy requirements
+COPY requirements.txt .
+COPY requirements-dev.txt .
+
+# Install Python dependencies (including dev dependencies)
+RUN pip install --no-cache-dir -r requirements.txt && \
+    pip install --no-cache-dir -r requirements-dev.txt
+
+# Create directories
+RUN mkdir -p /app/knowledge_repository \
+    /app/cache \
+    /app/logs \
+    /app/backups \
+    /app/temp
+
+# Copy application code
+COPY . .
+
+# Expose port
+EXPOSE 8000
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD curl -f http://localhost:8000/api/v1/health || exit 1
+
+# Development command with auto-reload
+CMD ["python", "-m", "uvicorn", "linkedin_scraper.api.app:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]

@@ -1,0 +1,134 @@
+# LinkedIn Knowledge Management System - Docker Ignore
+
+# Git
+.git
+.gitignore
+.gitattributes
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual Environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Logs
+*.log
+logs/
+log/
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Coverage directory used by tools like istanbul
+coverage/
+*.cover
+.nyc_output
+
+# pytest
+.pytest_cache/
+.coverage
+htmlcov/
+
+# mypy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# Documentation
+docs/_build/
+site/
+
+# Local development files
+.env.local
+.env.development
+.env.test
+.env.production
+
+# Cache directories
+cache/
+.cache/
+tmp/
+temp/
+
+# Knowledge repository (will be mounted as volume)
+knowledge_repository/
+backups/
+
+# Test files
+test_*.py
+*_test.py
+tests/
+
+# Development scripts
+test_*.py
+quick_*.py
+validate_*.py
+
+# Docker
+Dockerfile.dev
+docker-compose.dev.yml
+docker-compose.override.yml
+
+# CI/CD
+.github/
+.gitlab-ci.yml
+.travis.yml
+Jenkinsfile
+
+# Documentation
+README.md
+CHANGELOG.md
+LICENSE
+*.md
+
+# Configuration templates
+.env.template
+.env.example

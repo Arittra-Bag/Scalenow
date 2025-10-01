@@ -1,0 +1,500 @@
+{% extends "base.html" %}
+
+{% block title %}Analytics & Insights - LinkedIn Knowledge Management System{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h3 mb-0">
+        <i class="fas fa-chart-bar me-2"></i>Analytics & Insights
+    </h1>
+    <div>
+        <button class="btn btn-outline-primary me-2" onclick="refreshAnalytics()">
+            <i class="fas fa-sync-alt me-1"></i>Refresh
+        </button>
+        <button class="btn btn-success" onclick="exportAnalytics()">
+            <i class="fas fa-download me-1"></i>Export Report
+        </button>
+    </div>
+</div>
+
+<!-- Overview Metrics -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card metric-card">
+            <div class="metric-value" id="totalKnowledgeItems">0</div>
+            <div class="metric-label">Knowledge Items</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card metric-card">
+            <div class="metric-value" id="totalProcessedPosts">0</div>
+            <div class="metric-label">Posts Processed</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card metric-card">
+            <div class="metric-value" id="knowledgeExtractionRate">0%</div>
+            <div class="metric-label">Knowledge Rate</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card metric-card">
+            <div class="metric-value" id="totalCourseReferences">0</div>
+            <div class="metric-label">Course References</div>
+        </div>
+    </div>
+</div>
+
+<!-- Charts Row -->
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-pie-chart me-2"></i>Category Distribution
+                </h5>
+            </div>
+            <div class="card-body">
+                <canvas id="categoryChart" width="400" height="300"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-line-chart me-2"></i>Processing Timeline
+                </h5>
+            </div>
+            <div class="card-body">
+                <canvas id="timelineChart" width="400" height="300"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Top Topics and Insights -->
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-tags me-2"></i>Top Topics
+                </h5>
+            </div>
+            <div class="card-body">
+                <div id="topTopics">
+                    <div class="text-center text-muted">
+                        <i class="fas fa-spinner fa-spin"></i> Loading...
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-graduation-cap me-2"></i>Course References
+                </h5>
+            </div>
+            <div class="card-body">
+                <div id="courseReferences">
+                    <div class="text-center text-muted">
+                        <i class="fas fa-spinner fa-spin"></i> Loading...
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Processing Performance -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-tachometer-alt me-2"></i>Processing Performance
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="text-center">
+                            <div class="h4 text-primary" id="avgProcessingTime">-</div>
+                            <div class="text-muted">Avg Processing Time</div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="text-center">
+                            <div class="h4 text-success" id="successRate">-</div>
+                            <div class="text-muted">Success Rate</div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="text-center">
+                            <div class="h4 text-info" id="dailyAverage">-</div>
+                            <div class="text-muted">Daily Average</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Activity -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="fas fa-clock me-2"></i>Recent Activity
+                    </h5>
+                    <select class="form-select form-select-sm" id="activityFilter" onchange="filterActivity()" style="width: auto;">
+                        <option value="all">All Activity</option>
+                        <option value="knowledge">Knowledge Extracted</option>
+                        <option value="processed">Posts Processed</option>
+                        <option value="errors">Errors</option>
+                    </select>
+                </div>
+            </div>
+            <div class="card-body p-0">
+                <div id="recentActivity">
+                    <div class="text-center p-4">
+                        <i class="fas fa-spinner fa-spin me-2"></i>Loading activity...
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    let categoryChart = null;
+    let timelineChart = null;
+    let analyticsData = null;
+    
+    document.addEventListener('DOMContentLoaded', function() {
+        loadAnalytics();
+    });
+    
+    async function loadAnalytics() {
+        try {
+            const response = await apiCall('/analytics/content');
+            analyticsData = response;
+            updateMetrics(response);
+            createCharts(response);
+            updateTopTopics(response);
+            updateCourseReferences(response);
+            updatePerformanceMetrics(response);
+            loadRecentActivity();
+        } catch (error) {
+            showAlert('Failed to load analytics', 'danger');
+        }
+    }
+    
+    function updateMetrics(data) {
+        const analytics = data.content_analytics || {};
+        const processing = data.processing_analytics || {};
+        
+        document.getElementById('totalKnowledgeItems').textContent = analytics.total_knowledge_items || 0;
+        document.getElementById('totalProcessedPosts').textContent = processing.total_processed || 0;
+        
+        const knowledgeRate = processing.total_processed > 0 ? 
+            Math.round((analytics.total_knowledge_items / processing.total_processed) * 100) : 0;
+        document.getElementById('knowledgeExtractionRate').textContent = knowledgeRate + '%';
+        
+        const totalCourseRefs = Object.values(analytics.course_references || {}).reduce((a, b) => a + b, 0);
+        document.getElementById('totalCourseReferences').textContent = totalCourseRefs;
+    }
+    
+    function createCharts(data) {
+        createCategoryChart(data.content_analytics?.category_distribution || {});
+        createTimelineChart(data.processing_analytics?.daily_stats || {});
+    }
+    
+    function createCategoryChart(categoryData) {
+        const ctx = document.getElementById('categoryChart').getContext('2d');
+        
+        if (categoryChart) {
+            categoryChart.destroy();
+        }
+        
+        const labels = Object.keys(categoryData);
+        const values = Object.values(categoryData);
+        const colors = [
+            '#007bff', '#28a745', '#ffc107', '#6f42c1', 
+            '#17a2b8', '#fd7e14', '#6c757d', '#e83e8c'
+        ];
+        
+        categoryChart = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: labels,
+                datasets: [{
+                    data: values,
+                    backgroundColor: colors.slice(0, labels.length),
+                    borderWidth: 2,
+                    borderColor: '#fff'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    }
+                }
+            }
+        });
+    }
+    
+    function createTimelineChart(dailyStats) {
+        const ctx = document.getElementById('timelineChart').getContext('2d');
+        
+        if (timelineChart) {
+            timelineChart.destroy();
+        }
+        
+        const sortedDates = Object.keys(dailyStats).sort();
+        const labels = sortedDates.map(date => new Date(date).toLocaleDateString());
+        const processedData = sortedDates.map(date => dailyStats[date].processed || 0);
+        const knowledgeData = sortedDates.map(date => dailyStats[date].knowledge_extracted || 0);
+        
+        timelineChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Posts Processed',
+                    data: processedData,
+                    borderColor: '#007bff',
+                    backgroundColor: 'rgba(0, 123, 255, 0.1)',
+                    tension: 0.4
+                }, {
+                    label: 'Knowledge Extracted',
+                    data: knowledgeData,
+                    borderColor: '#28a745',
+                    backgroundColor: 'rgba(40, 167, 69, 0.1)',
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                },
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    }
+                }
+            }
+        });
+    }
+    
+    function updateTopTopics(data) {
+        const topics = data.content_analytics?.top_topics || {};
+        const topicsElement = document.getElementById('topTopics');
+        
+        if (Object.keys(topics).length === 0) {
+            topicsElement.innerHTML = '<div class="text-muted">No topics found</div>';
+            return;
+        }
+        
+        let html = '';
+        const sortedTopics = Object.entries(topics)
+            .sort(([,a], [,b]) => b - a)
+            .slice(0, 10);
+        
+        sortedTopics.forEach(([topic, count]) => {
+            const percentage = Math.round((count / Object.values(topics).reduce((a, b) => a + b, 0)) * 100);
+            html += `
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <div>
+                        <span class="fw-medium">${topic}</span>
+                        <small class="text-muted ms-2">(${count} items)</small>
+                    </div>
+                    <div class="progress" style="width: 100px; height: 8px;">
+                        <div class="progress-bar" style="width: ${percentage}%"></div>
+                    </div>
+                </div>
+            `;
+        });
+        
+        topicsElement.innerHTML = html;
+    }
+    
+    function updateCourseReferences(data) {
+        const courses = data.content_analytics?.course_references || {};
+        const coursesElement = document.getElementById('courseReferences');
+        
+        if (Object.keys(courses).length === 0) {
+            coursesElement.innerHTML = '<div class="text-muted">No course references found</div>';
+            return;
+        }
+        
+        let html = '';
+        const sortedCourses = Object.entries(courses)
+            .sort(([,a], [,b]) => b - a)
+            .slice(0, 10);
+        
+        sortedCourses.forEach(([course, count]) => {
+            html += `
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <div class="flex-grow-1">
+                        <div class="fw-medium">${course}</div>
+                    </div>
+                    <span class="badge bg-primary">${count}</span>
+                </div>
+            `;
+        });
+        
+        coursesElement.innerHTML = html;
+    }
+    
+    function updatePerformanceMetrics(data) {
+        const processing = data.processing_analytics || {};
+        
+        const avgTime = processing.average_processing_time || 0;
+        document.getElementById('avgProcessingTime').textContent = 
+            avgTime > 0 ? `${avgTime.toFixed(1)}s` : '-';
+        
+        const successRate = processing.success_rate || 0;
+        document.getElementById('successRate').textContent = 
+            successRate > 0 ? `${Math.round(successRate)}%` : '-';
+        
+        const dailyAvg = processing.daily_average || 0;
+        document.getElementById('dailyAverage').textContent = 
+            dailyAvg > 0 ? `${Math.round(dailyAvg)}` : '-';
+    }
+    
+    async function loadRecentActivity() {
+        try {
+            const response = await apiCall('/analytics/activity');
+            renderRecentActivity(response.activities || []);
+        } catch (error) {
+            document.getElementById('recentActivity').innerHTML = 
+                '<div class="text-danger p-4 text-center">Failed to load recent activity</div>';
+        }
+    }
+    
+    function renderRecentActivity(activities) {
+        const activityElement = document.getElementById('recentActivity');
+        
+        if (!activities || activities.length === 0) {
+            activityElement.innerHTML = '<div class="text-muted p-4 text-center">No recent activity</div>';
+            return;
+        }
+        
+        let html = '<div class="list-group list-group-flush">';
+        
+        activities.forEach(activity => {
+            const icon = getActivityIcon(activity.type);
+            const color = getActivityColor(activity.type);
+            
+            html += `
+                <div class="list-group-item activity-item" data-type="${activity.type}">
+                    <div class="d-flex align-items-start">
+                        <div class="me-3">
+                            <i class="fas ${icon} text-${color}"></i>
+                        </div>
+                        <div class="flex-grow-1">
+                            <div class="fw-medium">${activity.title}</div>
+                            <div class="text-muted small">${activity.description}</div>
+                            <div class="text-muted small">
+                                <i class="fas fa-clock me-1"></i>${formatDate(activity.timestamp)}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+        
+        html += '</div>';
+        activityElement.innerHTML = html;
+    }
+    
+    function getActivityIcon(type) {
+        const icons = {
+            'knowledge': 'fa-lightbulb',
+            'processed': 'fa-check-circle',
+            'error': 'fa-exclamation-triangle',
+            'started': 'fa-play',
+            'completed': 'fa-flag-checkered'
+        };
+        return icons[type] || 'fa-info-circle';
+    }
+    
+    function getActivityColor(type) {
+        const colors = {
+            'knowledge': 'success',
+            'processed': 'primary',
+            'error': 'danger',
+            'started': 'info',
+            'completed': 'success'
+        };
+        return colors[type] || 'secondary';
+    }
+    
+    function filterActivity() {
+        const filter = document.getElementById('activityFilter').value;
+        const items = document.querySelectorAll('.activity-item');
+        
+        items.forEach(item => {
+            const type = item.getAttribute('data-type');
+            if (filter === 'all' || type === filter) {
+                item.style.display = '';
+            } else {
+                item.style.display = 'none';
+            }
+        });
+    }
+    
+    async function refreshAnalytics() {
+        showAlert('Refreshing analytics...', 'info');
+        await loadAnalytics();
+        showAlert('Analytics refreshed', 'success');
+    }
+    
+    async function exportAnalytics() {
+        try {
+            const response = await fetch('/api/v1/analytics/export', {
+                method: 'GET',
+                headers: {
+                    'Accept': 'application/json'
+                }
+            });
+            
+            if (!response.ok) {
+                throw new Error('Export failed');
+            }
+            
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `analytics-report-${new Date().toISOString().split('T')[0]}.pdf`;
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+            
+            showAlert('Analytics report exported', 'success');
+            
+        } catch (error) {
+            showAlert('Failed to export analytics report', 'danger');
+        }
+    }
+</script>
+{% endblock %}

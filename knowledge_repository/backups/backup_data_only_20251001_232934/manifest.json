@@ -1,0 +1,9 @@
+{
+  "backup_type": "data_only",
+  "created": "2025-10-01T23:29:34.338177",
+  "item_count": 5,
+  "repository_version": "1.0",
+  "files_included": [
+    "repository.json"
+  ]
+}

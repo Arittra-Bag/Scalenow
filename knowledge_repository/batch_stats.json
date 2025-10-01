@@ -1,0 +1,13 @@
+{
+  "total_tasks": 8,
+  "completed_tasks": 8,
+  "failed_tasks": 0,
+  "cancelled_tasks": 0,
+  "retried_tasks": 0,
+  "duplicates_skipped": 0,
+  "average_processing_time": 4.587514,
+  "total_processing_time": 36.700112,
+  "start_time": "2025-10-02T00:03:49.554953",
+  "end_time": "2025-10-02T00:04:15.508254",
+  "saved_at": "2025-10-02T00:04:15.512614"
+}

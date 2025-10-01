@@ -1,0 +1,11 @@
+{
+  "backup_type": "full",
+  "created": "2025-10-01T23:29:34.908815",
+  "item_count": 5,
+  "repository_version": "1.0",
+  "files_included": [
+    "repository.json",
+    "docs\\integrated_test.docx",
+    "excels\\integrated_test.xlsx"
+  ]
+}

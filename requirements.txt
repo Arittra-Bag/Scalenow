@@ -1,0 +1,72 @@
+# LinkedIn Knowledge Management System - Production Dependencies
+
+# Web Framework
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+jinja2==3.1.2
+python-multipart==0.0.6
+
+# HTTP and Web Scraping
+requests==2.31.0
+httpx==0.25.2
+selenium==4.15.2
+playwright==1.40.0
+beautifulsoup4==4.12.2
+lxml==4.9.3
+
+# AI and ML
+google-generativeai==0.3.2
+openai==1.3.7
+anthropic==0.7.8
+
+# Data Processing
+pandas==2.1.4
+numpy==1.25.2
+openpyxl==3.1.2
+python-docx==1.1.0
+Pillow==10.1.0
+
+# Database and Caching
+sqlite3
+redis==5.0.1
+sqlalchemy==2.0.23
+
+# Configuration and Environment
+python-dotenv==1.0.0
+pydantic==2.5.0
+pydantic-settings==2.1.0
+
+# Security and Encryption
+cryptography==41.0.8
+passlib[bcrypt]==1.7.4
+python-jose[cryptography]==3.3.0
+
+# Logging and Monitoring
+structlog==23.2.0
+prometheus-client==0.19.0
+
+# Email and Notifications
+smtplib
+email-validator==2.1.0
+
+# Utilities
+click==8.1.7
+rich==13.7.0
+python-dateutil==2.8.2
+pytz==2023.3
+schedule==1.2.0
+
+# File Processing
+pathlib
+tempfile
+shutil
+zipfile
+
+# Async Support
+asyncio
+aiofiles==23.2.1
+aiohttp==3.9.1
+
+# Development and Testing (minimal for production)
+pytest==7.4.3
+pytest-asyncio==0.21.1

@@ -1,0 +1,108 @@
+# LinkedIn Knowledge Management System - Render Deployment Configuration
+
+services:
+  # Main web service
+  - type: web
+    name: linkedin-kms
+    env: python
+    plan: starter  # Can be upgraded to standard/pro
+    buildCommand: |
+      pip install --upgrade pip
+      pip install -r requirements.txt
+    startCommand: |
+      python -m uvicorn linkedin_scraper.api.app:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: ENVIRONMENT
+        value: production
+      - key: SERVER_HOST
+        value: 0.0.0.0
+      - key: SERVER_PORT
+        fromService:
+          type: web
+          name: linkedin-kms
+          property: port
+      - key: PYTHONUNBUFFERED
+        value: "1"
+      - key: PYTHONDONTWRITEBYTECODE
+        value: "1"
+      - key: KNOWLEDGE_REPO_PATH
+        value: /opt/render/project/src/knowledge_repository
+      - key: CACHE_DB_PATH
+        value: /opt/render/project/src/cache/knowledge_cache.db
+      - key: LOG_FILE_PATH
+        value: /opt/render/project/src/logs/linkedin_kms.log
+      - key: ENABLE_FILE_LOGGING
+        value: "true"
+      - key: LOG_LEVEL
+        value: INFO
+      - key: ENABLE_PII_DETECTION
+        value: "true"
+      - key: SANITIZE_CONTENT
+        value: "true"
+      - key: CORS_ALLOW_ORIGINS
+        value: https://your-domain.onrender.com
+      - key: API_RATE_LIMIT_REQUESTS_PER_MINUTE
+        value: "60"
+      - key: GEMINI_RATE_LIMIT_RPM
+        value: "15"
+      # Secret environment variables (set in Render dashboard)
+      - key: GEMINI_API_KEY
+        sync: false  # This will be set manually in Render dashboard
+      - key: API_SECRET_KEY
+        sync: false
+      - key: ENCRYPTION_KEY
+        sync: false
+    healthCheckPath: /api/v1/health
+    disk:
+      name: linkedin-kms-disk
+      mountPath: /opt/render/project/src
+      sizeGB: 1
+
+  # Redis service for caching
+  - type: redis
+    name: linkedin-kms-redis
+    plan: starter
+    maxmemoryPolicy: allkeys-lru
+
+# Background workers (optional)
+  - type: worker
+    name: linkedin-kms-worker
+    env: python
+    plan: starter
+    buildCommand: |
+      pip install --upgrade pip
+      pip install -r requirements.txt
+    startCommand: |
+      python -m linkedin_scraper.workers.background_processor
+    envVars:
+      - key: ENVIRONMENT
+        value: production
+      - key: WORKER_TYPE
+        value: background_processor
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: linkedin-kms-redis
+          property: connectionString
+      # Copy environment variables from web service
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: ENABLE_PII_DETECTION
+        value: "true"
+      - key: SANITIZE_CONTENT
+        value: "true"
+
+# Cron jobs for maintenance
+  - type: cron
+    name: linkedin-kms-backup
+    schedule: "0 2 * * *"  # Daily at 2 AM
+    buildCommand: |
+      pip install --upgrade pip
+      pip install -r requirements.txt
+    startCommand: |
+      python scripts/backup_data.py
+    envVars:
+      - key: ENVIRONMENT
+        value: production
+      - key: BACKUP_TYPE
+        value: daily

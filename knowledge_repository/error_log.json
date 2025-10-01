@@ -1,0 +1,152 @@
+{
+  "error_records": {
+    "error_1759343537118": {
+      "id": "error_1759343537118",
+      "error_type": "ScrapingError",
+      "error_message": "Page not found (URL: https://example.com) (Status: 404)",
+      "severity": "medium",
+      "occurred_at": "2025-10-02T00:02:17.118209",
+      "context": {
+        "operation": "scraping",
+        "url": "https://example.com"
+      },
+      "stack_trace": "NoneType: None\n",
+      "recovery_action": "retry",
+      "recovery_attempted": true,
+      "recovery_successful": true,
+      "retry_count": 1,
+      "resolved_at": "2025-10-02T00:02:17.118209"
+    },
+    "error_1759343537125": {
+      "id": "error_1759343537125",
+      "error_type": "APIError",
+      "error_message": "Rate limit exceeded (API: LinkedIn) (Code: RATE_LIMIT)",
+      "severity": "high",
+      "occurred_at": "2025-10-02T00:02:17.131901",
+      "context": {
+        "operation": "api_call",
+        "endpoint": "/posts"
+      },
+      "stack_trace": "NoneType: None\n",
+      "recovery_action": "retry",
+      "recovery_attempted": true,
+      "recovery_successful": false,
+      "retry_count": 5,
+      "resolved_at": null
+    },
+    "error_1759343556432": {
+      "id": "error_1759343556432",
+      "error_type": "ProcessingError",
+      "error_message": "AI processing failed (Stage: content_extraction)",
+      "severity": "medium",
+      "occurred_at": "2025-10-02T00:02:36.432285",
+      "context": {
+        "operation": "processing",
+        "content_id": "test123"
+      },
+      "stack_trace": "NoneType: None\n",
+      "recovery_action": "fallback",
+      "recovery_attempted": true,
+      "recovery_successful": true,
+      "retry_count": 0,
+      "resolved_at": "2025-10-02T00:02:36.939163"
+    },
+    "error_1759343610067": {
+      "id": "error_1759343610067",
+      "error_type": "ScrapingError",
+      "error_message": "Page not found (URL: https://example.com) (Status: 404)",
+      "severity": "medium",
+      "occurred_at": "2025-10-02T00:03:30.067840",
+      "context": {
+        "operation": "scraping",
+        "url": "https://example.com"
+      },
+      "stack_trace": "NoneType: None\n",
+      "recovery_action": "retry",
+      "recovery_attempted": true,
+      "recovery_successful": true,
+      "retry_count": 1,
+      "resolved_at": "2025-10-02T00:03:30.068841"
+    },
+    "error_1759343610084": {
+      "id": "error_1759343610084",
+      "error_type": "APIError",
+      "error_message": "Rate limit exceeded (API: LinkedIn) (Code: RATE_LIMIT)",
+      "severity": "high",
+      "occurred_at": "2025-10-02T00:03:30.084314",
+      "context": {
+        "operation": "api_call",
+        "endpoint": "/posts"
+      },
+      "stack_trace": "NoneType: None\n",
+      "recovery_action": "retry",
+      "recovery_attempted": true,
+      "recovery_successful": false,
+      "retry_count": 5,
+      "resolved_at": null
+    },
+    "error_1759343628891": {
+      "id": "error_1759343628891",
+      "error_type": "ProcessingError",
+      "error_message": "AI processing failed (Stage: content_extraction)",
+      "severity": "medium",
+      "occurred_at": "2025-10-02T00:03:48.891158",
+      "context": {
+        "operation": "processing",
+        "content_id": "test123"
+      },
+      "stack_trace": "NoneType: None\n",
+      "recovery_action": "fallback",
+      "recovery_attempted": true,
+      "recovery_successful": true,
+      "retry_count": 0,
+      "resolved_at": "2025-10-02T00:03:49.397281"
+    },
+    "error_1759343630178": {
+      "id": "error_1759343630178",
+      "error_type": "ScrapingError",
+      "error_message": "Failed to scrape content (URL: https://linkedin.com/posts/user3_marketing-tips_activity-345678) (Status: 404)",
+      "severity": "medium",
+      "occurred_at": "2025-10-02T00:03:50.181782",
+      "context": {
+        "url": "https://linkedin.com/posts/user3_marketing-tips_activity-345678",
+        "metadata": {
+          "test_run": "integrated"
+        },
+        "operation": "processing"
+      },
+      "stack_trace": "Traceback (most recent call last):\n  File \"C:\\Users\\aritt\\OneDrive\\Desktop\\ScaleNow\\Webscraper\\test_batch_processing.py\", line 265, in process_with_error_handling\n    return await simulate_processing_with_errors(url, metadata)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\aritt\\OneDrive\\Desktop\\ScaleNow\\Webscraper\\test_batch_processing.py\", line 43, in simulate_processing_with_errors\n    raise ScrapingError(\"Failed to scrape content\", url=url, status_code=404)\nlinkedin_scraper.models.exceptions.ScrapingError: Failed to scrape content (URL: https://linkedin.com/posts/user3_marketing-tips_activity-345678) (Status: 404)\n",
+      "recovery_action": "retry",
+      "recovery_attempted": true,
+      "recovery_successful": false,
+      "retry_count": 3,
+      "resolved_at": null
+    },
+    "error_1759343631434": {
+      "id": "error_1759343631434",
+      "error_type": "APIError",
+      "error_message": "Rate limit exceeded (API: LinkedIn) (Code: RATE_LIMIT)",
+      "severity": "high",
+      "occurred_at": "2025-10-02T00:03:51.435736",
+      "context": {
+        "url": "https://linkedin.com/posts/user6_business-strategy_activity-678901",
+        "metadata": {
+          "test_run": "integrated"
+        },
+        "operation": "processing"
+      },
+      "stack_trace": "Traceback (most recent call last):\n  File \"C:\\Users\\aritt\\OneDrive\\Desktop\\ScaleNow\\Webscraper\\test_batch_processing.py\", line 265, in process_with_error_handling\n    return await simulate_processing_with_errors(url, metadata)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\aritt\\OneDrive\\Desktop\\ScaleNow\\Webscraper\\test_batch_processing.py\", line 45, in simulate_processing_with_errors\n    raise APIError(\"Rate limit exceeded\", api_name=\"LinkedIn\", error_code=\"RATE_LIMIT\")\nlinkedin_scraper.models.exceptions.APIError: Rate limit exceeded (API: LinkedIn) (Code: RATE_LIMIT)\n",
+      "recovery_action": "retry",
+      "recovery_attempted": true,
+      "recovery_successful": false,
+      "retry_count": 5,
+      "resolved_at": null
+    }
+  },
+  "error_counts": {
+    "ScrapingError": 3,
+    "APIError": 3,
+    "ProcessingError": 2
+  },
+  "saved_at": "2025-10-02T00:04:15.401302"
+}

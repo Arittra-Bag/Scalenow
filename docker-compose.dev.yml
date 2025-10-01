@@ -1,0 +1,82 @@
+# LinkedIn Knowledge Management System - Development Docker Compose
+version: '3.8'
+
+services:
+  # Development application service
+  linkedin-kms-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: linkedin-kms-dev
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      - ENVIRONMENT=development
+      - DEVELOPMENT_MODE=true
+      - SERVER_DEBUG=true
+      - SERVER_RELOAD=true
+      - LOG_LEVEL=DEBUG
+      - ENABLE_DEBUG_LOGGING=true
+      - KNOWLEDGE_REPO_PATH=/app/knowledge_repository
+      - CACHE_DB_PATH=/app/cache/knowledge_cache.db
+      - LOG_FILE_PATH=/app/logs/linkedin_kms.log
+    env_file:
+      - .env.dev
+    volumes:
+      # Mount source code for hot reloading
+      - .:/app
+      - knowledge_dev_data:/app/knowledge_repository
+      - cache_dev_data:/app/cache
+      - log_dev_data:/app/logs
+    networks:
+      - linkedin-kms-dev-network
+    depends_on:
+      - redis-dev
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Redis for development
+  redis-dev:
+    image: redis:7-alpine
+    container_name: linkedin-kms-redis-dev
+    restart: unless-stopped
+    ports:
+      - "6380:6379"  # Different port to avoid conflicts
+    volumes:
+      - redis_dev_data:/data
+    networks:
+      - linkedin-kms-dev-network
+    command: redis-server --appendonly yes
+
+  # Database admin interface (optional)
+  adminer:
+    image: adminer:latest
+    container_name: linkedin-kms-adminer
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    networks:
+      - linkedin-kms-dev-network
+    profiles:
+      - admin-tools
+
+# Development volumes
+volumes:
+  knowledge_dev_data:
+    driver: local
+  cache_dev_data:
+    driver: local
+  log_dev_data:
+    driver: local
+  redis_dev_data:
+    driver: local
+
+# Development network
+networks:
+  linkedin-kms-dev-network:
+    driver: bridge

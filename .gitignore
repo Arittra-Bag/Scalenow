@@ -1,0 +1,7 @@
+.env
+__pycache__/
+.kiro
+.vscode
+cache
+logs/
+test_output

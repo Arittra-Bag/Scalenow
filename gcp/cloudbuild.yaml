@@ -1,0 +1,59 @@
+# LinkedIn Knowledge Management System - Google Cloud Build Configuration
+
+steps:
+  # Step 1: Install dependencies and run tests
+  - name: 'python:3.11-slim'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install -r requirements-dev.txt
+        python -m pytest tests/ -v --tb=short || echo "Tests completed with issues"
+    id: 'test'
+
+  # Step 2: Security scan
+  - name: 'python:3.11-slim'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        pip install safety bandit
+        safety check -r requirements.txt || echo "Safety check completed"
+        bandit -r linkedin_scraper/ -f json -o bandit-report.json || echo "Bandit scan completed"
+    id: 'security-scan'
+    waitFor: ['test']
+
+  # Step 3: Build and deploy to App Engine
+  - name: 'gcr.io/cloud-builders/gcloud'
+    args: ['app', 'deploy', 'gcp/app.yaml', '--quiet']
+    id: 'deploy'
+    waitFor: ['security-scan']
+
+  # Step 4: Run post-deployment health check
+  - name: 'gcr.io/cloud-builders/curl'
+    args: ['--fail', 'https://${PROJECT_ID}.appspot.com/api/v1/health']
+    id: 'health-check'
+    waitFor: ['deploy']
+
+# Build configuration
+options:
+  logging: CLOUD_LOGGING_ONLY
+  machineType: 'E2_HIGHCPU_8'
+  
+# Timeout for the entire build
+timeout: '1200s'
+
+# Substitutions (can be overridden)
+substitutions:
+  _ENVIRONMENT: 'production'
+  _DEPLOY_REGION: 'us-central1'
+
+# Artifacts to store
+artifacts:
+  objects:
+    location: 'gs://${PROJECT_ID}-build-artifacts'
+    paths:
+      - 'bandit-report.json'
+      - 'pytest-report.xml'

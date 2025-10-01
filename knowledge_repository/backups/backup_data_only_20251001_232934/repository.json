@@ -1,0 +1,98 @@
+{
+  "items": [
+    {
+      "id": "d33f807e-d101-4306-b6dc-6b3eb80e5e10",
+      "topic": "AI in Business",
+      "post_title": "How AI is Transforming Customer Service",
+      "key_knowledge_content": "AI chatbots can handle 80% of customer inquiries automatically, reducing response time by 60% and improving customer satisfaction scores by 25%.",
+      "infographic_summary": "Chart showing AI adoption rates across industries",
+      "source_link": "https://linkedin.com/posts/ai-expert-customer-service",
+      "notes_applications": "Implement AI chatbots for tier-1 support, maintain human oversight for complex issues",
+      "extraction_date": "2025-10-01T23:29:34.315929",
+      "category": "AI & Machine Learning",
+      "course_references": [
+        "AI for Customer Service Certification",
+        "Machine Learning Fundamentals"
+      ]
+    },
+    {
+      "id": "a631ad80-27d7-42cc-8db9-3c6689ebe240",
+      "topic": "SaaS Growth",
+      "post_title": "SaaS Metrics That Matter in 2024",
+      "key_knowledge_content": "Key SaaS metrics: Monthly Recurring Revenue (MRR), Customer Acquisition Cost (CAC), Lifetime Value (LTV), and Churn Rate. Aim for LTV:CAC ratio of 3:1 or higher.",
+      "infographic_summary": "Dashboard showing key SaaS metrics and benchmarks",
+      "source_link": "https://linkedin.com/posts/saas-expert-metrics-2024",
+      "notes_applications": "Track these metrics monthly, focus on reducing churn through better onboarding",
+      "extraction_date": "2025-10-01T23:29:34.315929",
+      "category": "SaaS & Business",
+      "course_references": [
+        "SaaS Business Model Mastery"
+      ]
+    },
+    {
+      "id": "69f663bb-64f7-4694-b01b-37c96912dbba",
+      "topic": "Digital Marketing",
+      "post_title": "Email Marketing Best Practices",
+      "key_knowledge_content": "Personalized email campaigns see 26% higher open rates. Segmentation can improve click-through rates by 100%. A/B testing subject lines increases engagement by 15%.",
+      "infographic_summary": "Email marketing statistics and best practices infographic",
+      "source_link": "https://linkedin.com/posts/marketing-guru-email-tips",
+      "notes_applications": "Implement email segmentation, test subject lines regularly, personalize content",
+      "extraction_date": "2025-10-01T23:29:34.315929",
+      "category": "Marketing & Sales",
+      "course_references": [
+        "Advanced Email Marketing",
+        "Digital Marketing Analytics"
+      ]
+    },
+    {
+      "id": "7d8797f9-61e8-493d-a140-7e036436d89d",
+      "topic": "Leadership",
+      "post_title": "Remote Team Management Strategies",
+      "key_knowledge_content": "Effective remote leadership requires clear communication, regular check-ins, and trust-building. Use asynchronous communication for 70% of interactions, synchronous for critical decisions.",
+      "infographic_summary": "Remote team management framework diagram",
+      "source_link": "https://linkedin.com/posts/leadership-coach-remote-teams",
+      "notes_applications": "Schedule weekly 1:1s, use project management tools, establish clear expectations",
+      "extraction_date": "2025-10-01T23:29:34.315929",
+      "category": "Leadership & Management",
+      "course_references": [
+        "Remote Leadership Certification"
+      ]
+    },
+    {
+      "id": "ba9e8a63-3bda-4c73-beb4-1a272e0bc1eb",
+      "topic": "Cloud Computing",
+      "post_title": "Microservices Architecture Benefits",
+      "key_knowledge_content": "Microservices can improve deployment frequency by 200x, reduce lead time by 2400x, and increase system reliability. However, they add complexity in monitoring and debugging.",
+      "infographic_summary": "Microservices vs monolithic architecture comparison",
+      "source_link": "https://linkedin.com/posts/tech-architect-microservices",
+      "notes_applications": "Start with monolith, migrate to microservices when team size exceeds 8-10 people",
+      "extraction_date": "2025-10-01T23:29:34.315929",
+      "category": "Technology Trends",
+      "course_references": [
+        "Microservices Design Patterns",
+        "Cloud Architecture Fundamentals"
+      ]
+    }
+  ],
+  "metadata": {
+    "total_items": 5,
+    "categories": {
+      "AI & Machine Learning": 1,
+      "SaaS & Business": 1,
+      "Marketing & Sales": 1,
+      "Leadership & Management": 1,
+      "Technology Trends": 1
+    },
+    "date_range": {
+      "earliest": "2025-10-01T23:29:34.315929",
+      "latest": "2025-10-01T23:29:34.315929"
+    },
+    "sources": {
+      "linkedin.com": 5
+    },
+    "last_updated": "2025-10-01T23:29:34.315929"
+  },
+  "created_at": "2025-10-01T23:29:34.315929",
+  "updated_at": "2025-10-01T23:29:34.315929",
+  "version": "1.0"
+}
