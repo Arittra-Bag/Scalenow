@@ -1,0 +1,23 @@
+Tool,Free Plan,Basic/Pro Plan,Enterprise Plan
+Tableau (Standard),N/A,"$75 (Creator), $42 (Explorer), $15 (Viewer)",Custom Pricing
+Tableau (Enterprise),N/A,"$115 (Creator), $70 (Explorer), $35 (Viewer)",Custom Pricing
+Notion,Yes,"$12 (Plus), $18 (Business)",Custom Pricing
+Power BI,Yes,$10 (Pro),Variable (Contact Sales)
+Metabase (Cloud),No,$85 + $5/user (Starter),Starts at $15k/year
+Metabase (Self-Host),Yes,Free (Open Source),Starts at $15k/year
+,,,
+,,,
+,,,
+,,,
+Service Tier,Subscription Cost,Customization Fees,Included Features & Support
+Essential Package,$500/month,$1000/project,"Core features, basic support, limited customization"
+Pro Package,$1000/month,$1800/project,"Advanced features, priority support"
+Enterprise Solution,$2500/month,$5000/project,"Full features, dedicated support, advanced customization"
+,,,
+,,,
+,,Feature,Description
+,,Seamless Integration,Works within existing Microsoft and Google Workspace security protocols.
+,,AI-Driven Security,Leverages machine learning for proactive threat detection.
+,,Granular Role-Based Access,Provides customized access controls tailored to user roles.
+,,Compliance & Encryption,Ensures data integrity and compliance with industry standards like GDPR.
+,,Continuous Monitoring,Adapts security measures based on real-time analytics and emerging threats.

@@ -1,0 +1,17 @@
+{
+		"version": "1.0.0.0",
+		"author": {"name":"Arittra Bag","email":"arittra.scalenowtech@gmail.com"},
+		"resources": [
+			{
+				"resourceId": "rId0",
+				"sourceType": 5,
+				"file": "resources/scaleNowVisualFE75B46F4A134E18AB5DD6EEB797A5A0.pbiviz.json"
+			}
+		],
+		"visual": {"name":"scaleNowVisual","displayName":"ScaleNowVisual","guid":"scaleNowVisualFE75B46F4A134E18AB5DD6EEB797A5A0","visualClassName":"Visual","version":"1.0.0.0","description":"Integrates ML predictions into Power BI.","supportUrl":"https://www.instagram.com/scalenowtechno","gitHubUrl":"https://github.com/Arittra-Bag/Scalenow"},
+		"metadata": {
+			"pbivizjson": {
+				"resourceId": "rId0"
+			}
+		}
+	}
